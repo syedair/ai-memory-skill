@@ -24,18 +24,28 @@ done
 
 # Increment session counter
 count=0
-[ -f "$SESSION_FILE" ] && count=$(cat "$SESSION_FILE" 2>/dev/null || echo 0)
+if [ -f "$SESSION_FILE" ]; then
+  raw=$(cat "$SESSION_FILE" 2>/dev/null || echo 0)
+  # Validate numeric content to prevent arithmetic injection
+  if echo "$raw" | grep -qE '^[0-9]+$'; then
+    count=$raw
+  fi
+fi
 count=$((count + 1))
 echo "$count" > "$SESSION_FILE"
 
 # Check staleness
 if [ -f "$DREAM_FILE" ]; then
-  last_dream=$(cat "$DREAM_FILE")
-  now=$(date +%s)
-  age=$(( (now - last_dream) / 86400 ))
-  if [ "$age" -ge 3 ] && [ "$count" -ge 5 ]; then
-    echo ""
-    echo "⚠ Memory hasn't been consolidated in ${age} days (${count} sessions). Consider saying 'dream' or 'consolidate memory' to clean up."
+  raw_dream=$(cat "$DREAM_FILE" 2>/dev/null || echo "")
+  # Validate numeric content before arithmetic use
+  if echo "$raw_dream" | grep -qE '^[0-9]+$'; then
+    last_dream=$raw_dream
+    now=$(date +%s)
+    age=$(( (now - last_dream) / 86400 ))
+    if [ "$age" -ge 3 ] && [ "$count" -ge 5 ]; then
+      echo ""
+      echo "⚠ Memory hasn't been consolidated in ${age} days (${count} sessions). Consider saying 'dream' or 'consolidate memory' to clean up."
+    fi
   fi
 else
   if [ "$count" -ge 5 ]; then
