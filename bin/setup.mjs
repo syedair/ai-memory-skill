@@ -18,6 +18,42 @@ function expandHome(p) {
   return p.startsWith("~/") ? join(homedir(), p.slice(2)) : p;
 }
 
+// Security: validate memory path to prevent shell injection when interpolated into scripts
+function validateMemoryPath(p) {
+  // Reject null bytes and control characters
+  if (/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/.test(p)) {
+    return "Path contains invalid control characters.";
+  }
+  // Reject newlines (could break shell script structure)
+  if (/[\n\r]/.test(p)) {
+    return "Path cannot contain newlines.";
+  }
+  // Reject shell metacharacters that could cause injection when path is
+  // interpolated into double-quoted strings in shell scripts
+  if (/[`$|;&(){}\[\]!\\]/.test(p)) {
+    return "Path contains shell metacharacters (` $ | ; & ( ) { } [ ] ! \\) that are not allowed.";
+  }
+  // Reject path traversal attempts
+  if (/(^|\/)\.\.($|\/)/.test(p)) {
+    return "Path cannot contain '..' traversal segments.";
+  }
+  return null;
+}
+
+// Security: validate agent name to prevent path injection or unexpected file names
+function validateAgentName(name) {
+  if (!name || name.length === 0) {
+    return "Agent name cannot be empty.";
+  }
+  if (name.length > 64) {
+    return "Agent name cannot exceed 64 characters.";
+  }
+  if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
+    return "Agent name can only contain letters, numbers, hyphens, and underscores.";
+  }
+  return null;
+}
+
 function green(s) { return `\x1b[32m${s}\x1b[0m`; }
 function yellow(s) { return `\x1b[33m${s}\x1b[0m`; }
 function cyan(s) { return `\x1b[36m${s}\x1b[0m`; }
@@ -175,6 +211,13 @@ async function main() {
 
   // 1. Memory folder path
   const rawMemPath = (await ask(`  Memory folder path ${dim("(~/Memory)")}: `)).trim() || "~/Memory";
+  const pathError = validateMemoryPath(rawMemPath);
+  if (pathError) {
+    console.log(yellow(`\n  ✗ Invalid memory path: ${pathError}`));
+    console.log(dim("  Use a simple path like ~/Memory or ~/Documents/memory\n"));
+    rl.close();
+    return;
+  }
   const memPath = expandHome(rawMemPath);
 
   const mode = detectInstall(memPath);
@@ -330,6 +373,13 @@ async function main() {
 
     // 7. Create or merge agent config
     const agentName = (await ask(`\n  Agent name ${dim("(mnemo)")}: `)).trim() || "mnemo";
+    const nameError = validateAgentName(agentName);
+    if (nameError) {
+      console.log(yellow(`\n  ✗ Invalid agent name: ${nameError}`));
+      console.log(dim("  Use only letters, numbers, hyphens, and underscores.\n"));
+      rl.close();
+      return;
+    }
     const agentsDir = expandHome("~/.kiro/agents");
     mkdirSync(agentsDir, { recursive: true });
 

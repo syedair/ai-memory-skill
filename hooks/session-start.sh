@@ -11,7 +11,13 @@ SESSION_FILE="$MEMORY_PATH/.session-count"
 
 # Increment session counter
 count=0
-[ -f "$SESSION_FILE" ] && count=$(cat "$SESSION_FILE" 2>/dev/null || echo 0)
+if [ -f "$SESSION_FILE" ]; then
+  raw=$(cat "$SESSION_FILE" 2>/dev/null || echo 0)
+  # Validate numeric content to prevent arithmetic injection
+  if echo "$raw" | grep -qE '^[0-9]+$'; then
+    count=$raw
+  fi
+fi
 count=$((count + 1))
 echo "$count" > "$SESSION_FILE"
 
@@ -29,11 +35,15 @@ done
 
 # Append staleness warning if needed
 if [ -f "$DREAM_FILE" ]; then
-  last_dream=$(cat "$DREAM_FILE")
-  now=$(date +%s)
-  age=$(( (now - last_dream) / 86400 ))
-  if [ "$age" -ge 3 ] && [ "$count" -ge 5 ]; then
-    context+="⚠ Memory hasn't been consolidated in ${age} days (${count} sessions). Consider running 'consolidate memory'.\n"
+  raw_dream=$(cat "$DREAM_FILE" 2>/dev/null || echo "")
+  # Validate numeric content before arithmetic use
+  if echo "$raw_dream" | grep -qE '^[0-9]+$'; then
+    last_dream=$raw_dream
+    now=$(date +%s)
+    age=$(( (now - last_dream) / 86400 ))
+    if [ "$age" -ge 3 ] && [ "$count" -ge 5 ]; then
+      context+="⚠ Memory hasn't been consolidated in ${age} days (${count} sessions). Consider running 'consolidate memory'.\n"
+    fi
   fi
 else
   if [ "$count" -ge 5 ]; then
