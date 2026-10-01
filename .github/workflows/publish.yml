@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - 'v*'
+  # Manual runs (Actions tab or API); publishes whatever versions package.json holds
+  workflow_dispatch:
 
 permissions:
   id-token: write
