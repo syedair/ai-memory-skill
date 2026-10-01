@@ -1,5 +1,5 @@
 {
-  "name": "kiro-memory-skill",
+  "name": "ai-memory-skill",
   "version": "3.3.0",
   "description": "Persistent memory system for AI assistants — supports Kiro and Claude Code",
   "license": "MIT",
@@ -9,7 +9,6 @@
     "url": "https://github.com/syedair/ai-memory-skill"
   },
   "bin": {
-    "kiro-memory-skill": "./bin/setup.mjs",
     "ai-memory-skill": "./bin/setup.mjs"
   },
   "files": [

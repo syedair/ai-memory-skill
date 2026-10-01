@@ -16,7 +16,18 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
-      - run: npm publish --provenance --access public
+      # Publishes ai-memory-skill and the kiro-memory-skill forwarder (old name).
+      # Versions already on npm are skipped, so a tag can be re-run safely.
+      - name: Publish packages
+        run: |
+          for dir in . legacy/kiro-memory-skill; do
+            spec=$(node -p "const p=require('./$dir/package.json'); p.name+'@'+p.version")
+            if npm view "$spec" version >/dev/null 2>&1; then
+              echo "$spec already published, skipping"
+            else
+              (cd "$dir" && npm publish --provenance --access public)
+            fi
+          done
