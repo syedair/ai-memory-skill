@@ -1,0 +1,19 @@
+{
+  "name": "kiro-memory-skill",
+  "version": "3.3.0",
+  "description": "Renamed to ai-memory-skill — this package forwards to it. Run: npx ai-memory-skill",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/syedair/ai-memory-skill"
+  },
+  "bin": {
+    "kiro-memory-skill": "./bin/forward.mjs"
+  },
+  "files": [
+    "bin/"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}

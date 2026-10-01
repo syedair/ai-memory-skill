@@ -20,3 +20,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - run: npm publish --provenance --access public
+
+      # Old package name: thin forwarder to ai-memory-skill
+      - run: npm publish --provenance --access public
+        working-directory: legacy/kiro-memory-skill

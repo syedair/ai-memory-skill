@@ -18,7 +18,7 @@ All memory is stored as plain markdown files in a folder you control (`~/Memory`
 ## Setup
 
 ```bash
-npx kiro-memory-skill
+npx ai-memory-skill
 ```
 
 The installer asks which tool you're setting up for — Kiro, Claude Code, or both — then handles everything automatically:
@@ -29,7 +29,22 @@ The installer asks which tool you're setting up for — Kiro, Claude Code, or bo
 - For Kiro: configures knowledge base index and creates an agent
 - For Claude Code: merges hooks into `~/.claude/settings.json`
 
-> Claude Code support requires v3.3.0 or later. If the installer doesn't offer a "Claude Code" option, you're on a cached older version — run `npx kiro-memory-skill@latest`.
+### Upgrading from `kiro-memory-skill`
+
+The package was renamed from `kiro-memory-skill` to `ai-memory-skill` in v3.3.0. To upgrade, run:
+
+```bash
+npx ai-memory-skill@latest
+```
+
+Your memory folder, skills, hooks, and agent config are detected and upgraded in place — nothing is lost. The old `npx kiro-memory-skill` command still works and forwards to the new package.
+
+If you installed it globally, swap it out:
+
+```bash
+npm uninstall -g kiro-memory-skill
+npm install -g ai-memory-skill
+```
 
 ### Manual Install — Claude Code
 
@@ -246,7 +261,7 @@ Edit the session-start hook script — change the `3` (days) and `5` (sessions) 
 
 ### Changing the memory path
 
-Re-run the installer (`npx kiro-memory-skill`) — it detects existing installs and updates paths without overwriting your data.
+Re-run the installer (`npx ai-memory-skill`) — it detects existing installs and updates paths without overwriting your data.
 
 ## License
 
