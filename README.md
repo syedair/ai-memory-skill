@@ -29,10 +29,7 @@ The installer asks which tool you're setting up for — Kiro, Claude Code, or bo
 - For Kiro: configures knowledge base index and creates an agent
 - For Claude Code: merges hooks into `~/.claude/settings.json`
 
-You can also invoke it as:
-```bash
-npx ai-memory-skill
-```
+> Claude Code support requires v3.3.0 or later. If the installer doesn't offer a "Claude Code" option, you're on a cached older version — run `npx kiro-memory-skill@latest`.
 
 ### Manual Install — Claude Code
 
@@ -81,12 +78,12 @@ Add to `~/.claude/settings.json`:
   "hooks": {
     "SessionStart": [
       {
-        "hooks": [{ "type": "command", "command": "bash \"~/.claude/hooks/memory-session-start.sh\"" }]
+        "hooks": [{ "type": "command", "command": "bash ~/.claude/hooks/memory-session-start.sh" }]
       }
     ],
     "Stop": [
       {
-        "hooks": [{ "type": "command", "command": "bash \"~/.claude/hooks/memory-stop.sh\"" }]
+        "hooks": [{ "type": "command", "command": "bash ~/.claude/hooks/memory-stop.sh" }]
       }
     ]
   }

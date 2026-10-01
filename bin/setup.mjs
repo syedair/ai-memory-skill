@@ -11,8 +11,34 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const pkgRoot = resolve(__dirname, "..");
 const PKG_VERSION = JSON.parse(readFileSync(join(pkgRoot, "package.json"), "utf-8")).version;
 
+// Buffer input lines so answers piped or pasted in one go aren't dropped
+// (rl.question only sees lines that arrive while it is pending).
 const rl = createInterface({ input: process.stdin, output: process.stdout });
-const ask = (q) => new Promise((r) => rl.question(q, r));
+const pendingLines = [];
+const waiters = [];
+let inputClosed = false;
+rl.on("line", (line) => {
+  if (waiters.length) waiters.shift()(line);
+  else pendingLines.push(line);
+});
+rl.on("close", () => {
+  inputClosed = true;
+  // EOF: resolve outstanding prompts with empty answers so defaults apply
+  while (waiters.length) waiters.shift()("");
+});
+const ask = (q) => {
+  process.stdout.write(q);
+  if (pendingLines.length) {
+    const line = pendingLines.shift();
+    if (!process.stdin.isTTY) process.stdout.write(line + "\n");
+    return Promise.resolve(line);
+  }
+  if (inputClosed) {
+    process.stdout.write("\n");
+    return Promise.resolve("");
+  }
+  return new Promise((r) => waiters.push(r));
+};
 
 function expandHome(p) {
   return p.startsWith("~/") ? join(homedir(), p.slice(2)) : p;
@@ -29,6 +55,8 @@ function detectInstall(memPath) {
     join(memPath, "MEMORY.md"),
     expandHome("~/.kiro/skills/load-memory/SKILL.md"),
     expandHome("~/.kiro/memory-hooks/agent-spawn.sh"),
+    expandHome("~/.claude/skills/load-memory/SKILL.md"),
+    expandHome("~/.claude/hooks/memory-session-start.sh"),
   ];
   return markers.some(f => existsSync(f)) ? "upgrade" : "fresh";
 }
