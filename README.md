@@ -263,6 +263,10 @@ Edit the session-start hook script — change the `3` (days) and `5` (sessions) 
 
 Re-run the installer (`npx ai-memory-skill`) — it detects existing installs and updates paths without overwriting your data.
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for local testing and how releases are published.
+
 ## License
 
 MIT — use it however you want.
